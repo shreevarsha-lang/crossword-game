@@ -36,6 +36,7 @@
       <button class="tab" id="registerTab">Register</button>
     </div>
 
+    <!-- LOGIN FORM -->
     <div class="form-box" id="loginForm">
       <h2>Welcome Back!</h2>
       <p class="form-sub">Login to continue playing</p>
@@ -48,10 +49,14 @@
         <input type="password" id="loginPassword" placeholder="Enter your password"/>
       </div>
       <div class="error-msg" id="loginError"></div>
+
+      <!-- ✅ Directly open game page and store username -->
       <button class="submit-btn" id="loginBtn">Login</button>
+
       <p class="switch-text">No account? <span id="goRegister">Register here</span></p>
     </div>
 
+    <!-- REGISTER FORM (non-functional on GitHub Pages) -->
     <div class="form-box hidden" id="registerForm">
       <h2>Create Account</h2>
       <p class="form-sub">Join and start playing!</p>
@@ -73,7 +78,7 @@
       </div>
       <div class="error-msg" id="registerError"></div>
       <div class="success-msg" id="registerSuccess"></div>
-      <button class="submit-btn" id="registerBtn">Create Account</button>
+      <button class="submit-btn">Create Account</button>
       <p class="switch-text">Have account? <span id="goLogin">Login here</span></p>
     </div>
 
@@ -107,100 +112,17 @@ document.getElementById('goLogin').addEventListener('click', function(){
   document.getElementById('loginTab').click();
 });
 
-// LOGIN BUTTON
+// ✅ LOGIN BUTTON FOR GITHUB PAGES
 document.getElementById('loginBtn').addEventListener('click', function(){
   var username = document.getElementById('loginUsername').value.trim();
-  var password = document.getElementById('loginPassword').value.trim();
-  var errorEl  = document.getElementById('loginError');
-  errorEl.textContent = '';
-
-  if(!username || !password){
-    errorEl.textContent = 'Please fill in all fields!';
+  if(!username){
+    document.getElementById('loginError').textContent = 'Please enter username!';
     return;
   }
-
-  errorEl.style.color = '#e2bc6b';
-  errorEl.textContent = 'Logging in...';
-
-  fetch('http://localhost:5000/api/auth/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username: username, password: password })
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    if(data.success){
-      localStorage.setItem('cw_user', JSON.stringify({
-        name: data.user.name,
-        username: data.user.username
-      }));
-      errorEl.style.color = '#4caf7d';
-      errorEl.textContent = 'Success! Opening game...';
-      setTimeout(function(){
-        window.location.href = 'index.html';
-      }, 1000);
-    } else {
-      errorEl.style.color = '#e05555';
-      errorEl.textContent = data.message;
-    }
-  })
-  .catch(function(){
-    errorEl.style.color = '#e05555';
-    errorEl.textContent = 'Cannot reach server! Is backend running?';
-  });
-});
-
-// REGISTER BUTTON
-document.getElementById('registerBtn').addEventListener('click', function(){
-  var name     = document.getElementById('regName').value.trim();
-  var username = document.getElementById('regUsername').value.trim();
-  var password = document.getElementById('regPassword').value.trim();
-  var confirm  = document.getElementById('regConfirm').value.trim();
-  var errorEl  = document.getElementById('registerError');
-  var successEl = document.getElementById('registerSuccess');
-  errorEl.textContent = '';
-  successEl.textContent = '';
-
-  if(!name || !username || !password || !confirm){
-    errorEl.textContent = 'Please fill in all fields!';
-    return;
-  }
-  if(password !== confirm){
-    errorEl.textContent = 'Passwords do not match!';
-    return;
-  }
-  if(password.length < 4){
-    errorEl.textContent = 'Password must be 4 characters or more!';
-    return;
-  }
-
-  successEl.textContent = 'Creating account...';
-
-  fetch('http://localhost:5000/api/auth/register', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: name, username: username, password: password })
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    if(data.success){
-      successEl.textContent = 'Account created! Please login now!';
-      document.getElementById('regName').value = '';
-      document.getElementById('regUsername').value = '';
-      document.getElementById('regPassword').value = '';
-      document.getElementById('regConfirm').value = '';
-      setTimeout(function(){
-        document.getElementById('loginTab').click();
-      }, 1500);
-    } else {
-      errorEl.textContent = data.message;
-      successEl.textContent = '';
-    }
-  })
-  .catch(function(){
-    errorEl.textContent = 'Cannot reach server! Is backend running?';
-    successEl.textContent = '';
-  });
+  // Save username in localStorage to show in game
+  localStorage.setItem('cw_user', username);
+  // Redirect to game page
+  window.location.href = 'game.html';
 });
 </script>
 
