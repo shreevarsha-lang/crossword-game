@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CrossWord - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="login.css"/>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="left-panel">
+    <div class="left-content">
+      <div class="big-logo">✦ Cross<span>Word</span></div>
+      <p class="tagline">Test your vocabulary.<br/>Challenge your mind.</p>
+      <div class="grid-deco">
+        <div class="deco-cell gold">C</div>
+        <div class="deco-cell">R</div>
+        <div class="deco-cell">O</div>
+        <div class="deco-cell">S</div>
+        <div class="deco-cell gold">S</div>
+        <div class="deco-cell">W</div>
+        <div class="deco-cell">O</div>
+        <div class="deco-cell gold">R</div>
+        <div class="deco-cell">D</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel">
+
+    <div class="tabs">
+      <button class="tab active" id="loginTab">Login</button>
+      <button class="tab" id="registerTab">Register</button>
+    </div>
+
+    <div class="form-box" id="loginForm">
+      <h2>Welcome Back!</h2>
+      <p class="form-sub">Login to continue playing</p>
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="loginUsername" placeholder="Enter your username"/>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter your password"/>
+      </div>
+      <div class="error-msg" id="loginError"></div>
+      <button class="submit-btn" id="loginBtn">Login</button>
+      <p class="switch-text">No account? <span id="goRegister">Register here</span></p>
+    </div>
+
+    <div class="form-box hidden" id="registerForm">
+      <h2>Create Account</h2>
+      <p class="form-sub">Join and start playing!</p>
+      <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="regName" placeholder="Enter your name"/>
+      </div>
+      <div class="input-group">
+        <label>Username</label>
+        <input type="text" id="regUsername" placeholder="Choose a username"/>
+      </div>
+      <div class="input-group">
+        <label>Password</label>
+        <input type="password" id="regPassword" placeholder="Choose a password"/>
+      </div>
+      <div class="input-group">
+        <label>Confirm Password</label>
+        <input type="password" id="regConfirm" placeholder="Repeat your password"/>
+      </div>
+      <div class="error-msg" id="registerError"></div>
+      <div class="success-msg" id="registerSuccess"></div>
+      <button class="submit-btn" id="registerBtn">Create Account</button>
+      <p class="switch-text">Have account? <span id="goLogin">Login here</span></p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// TAB SWITCHING
+document.getElementById('loginTab').addEventListener('click', function(){
+  document.getElementById('loginForm').classList.remove('hidden');
+  document.getElementById('registerForm').classList.add('hidden');
+  document.getElementById('loginTab').classList.add('active');
+  document.getElementById('registerTab').classList.remove('active');
+  document.getElementById('loginError').textContent = '';
+});
+
+document.getElementById('registerTab').addEventListener('click', function(){
+  document.getElementById('registerForm').classList.remove('hidden');
+  document.getElementById('loginForm').classList.add('hidden');
+  document.getElementById('registerTab').classList.add('active');
+  document.getElementById('loginTab').classList.remove('active');
+  document.getElementById('registerError').textContent = '';
+  document.getElementById('registerSuccess').textContent = '';
+});
+
+document.getElementById('goRegister').addEventListener('click', function(){
+  document.getElementById('registerTab').click();
+});
+
+document.getElementById('goLogin').addEventListener('click', function(){
+  document.getElementById('loginTab').click();
+});
+
+// LOGIN BUTTON
+document.getElementById('loginBtn').addEventListener('click', function(){
+  var username = document.getElementById('loginUsername').value.trim();
+  var password = document.getElementById('loginPassword').value.trim();
+  var errorEl  = document.getElementById('loginError');
+  errorEl.textContent = '';
+
+  if(!username || !password){
+    errorEl.textContent = 'Please fill in all fields!';
+    return;
+  }
+
+  errorEl.style.color = '#e2bc6b';
+  errorEl.textContent = 'Logging in...';
+
+  fetch('http://localhost:5000/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: username, password: password })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.success){
+      localStorage.setItem('cw_user', JSON.stringify({
+        name: data.user.name,
+        username: data.user.username
+      }));
+      errorEl.style.color = '#4caf7d';
+      errorEl.textContent = 'Success! Opening game...';
+      setTimeout(function(){
+        window.location.href = 'index.html';
+      }, 1000);
+    } else {
+      errorEl.style.color = '#e05555';
+      errorEl.textContent = data.message;
+    }
+  })
+  .catch(function(){
+    errorEl.style.color = '#e05555';
+    errorEl.textContent = 'Cannot reach server! Is backend running?';
+  });
+});
+
+// REGISTER BUTTON
+document.getElementById('registerBtn').addEventListener('click', function(){
+  var name     = document.getElementById('regName').value.trim();
+  var username = document.getElementById('regUsername').value.trim();
+  var password = document.getElementById('regPassword').value.trim();
+  var confirm  = document.getElementById('regConfirm').value.trim();
+  var errorEl  = document.getElementById('registerError');
+  var successEl = document.getElementById('registerSuccess');
+  errorEl.textContent = '';
+  successEl.textContent = '';
+
+  if(!name || !username || !password || !confirm){
+    errorEl.textContent = 'Please fill in all fields!';
+    return;
+  }
+  if(password !== confirm){
+    errorEl.textContent = 'Passwords do not match!';
+    return;
+  }
+  if(password.length < 4){
+    errorEl.textContent = 'Password must be 4 characters or more!';
+    return;
+  }
+
+  successEl.textContent = 'Creating account...';
+
+  fetch('http://localhost:5000/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: name, username: username, password: password })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.success){
+      successEl.textContent = 'Account created! Please login now!';
+      document.getElementById('regName').value = '';
+      document.getElementById('regUsername').value = '';
+      document.getElementById('regPassword').value = '';
+      document.getElementById('regConfirm').value = '';
+      setTimeout(function(){
+        document.getElementById('loginTab').click();
+      }, 1500);
+    } else {
+      errorEl.textContent = data.message;
+      successEl.textContent = '';
+    }
+  })
+  .catch(function(){
+    errorEl.textContent = 'Cannot reach server! Is backend running?';
+    successEl.textContent = '';
+  });
+});
+</script>
+
+</body>
+</html>
